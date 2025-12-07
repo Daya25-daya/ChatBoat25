@@ -25,6 +25,8 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
+console.log('🔐 Allowed CORS origins:', allowedOrigins);
+
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
