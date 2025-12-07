@@ -18,10 +18,7 @@ services:
       - key: NOTIFICATION_SERVICE_URL
         value: https://chat-notification.onrender.com
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: chat-redis
-          property: connectionString
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
@@ -40,10 +37,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: chat-redis
-          property: connectionString
+        sync: false
       - key: RABBITMQ_URL
         sync: false
       - key: JWT_SECRET
@@ -64,10 +58,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: chat-redis
-          property: connectionString
+        sync: false
       - key: RABBITMQ_URL
         sync: false
 
@@ -84,10 +75,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: chat-redis
-          property: connectionString
+        sync: false
       - key: RABBITMQ_URL
         sync: false
 
@@ -102,10 +90,7 @@ services:
       - key: PORT
         value: 4004
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: chat-redis
-          property: connectionString
+        sync: false
       - key: RABBITMQ_URL
         sync: false
 
@@ -116,8 +101,3 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
     plan: free
-
-databases:
-  - name: chat-redis
-    plan: free
-    ipAllowList: []
