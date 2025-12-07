@@ -1,15 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { useChat } from '../context/ChatContext'
 import { useAuth } from '../context/AuthContext'
+import { useSocket } from '../context/SocketContext'
 import EmojiPicker from './EmojiPicker'
 import FileUpload from './FileUpload'
+import CallModal from './CallModal'
 
 const MessageArea = () => {
   const { activeConversation, messages, sendMessage, startTyping, stopTyping, typingUsers } = useChat()
   const { user } = useAuth()
+  const { socket } = useSocket()
   const [inputMessage, setInputMessage] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showFileUpload, setShowFileUpload] = useState(false)
+  const [showCallModal, setShowCallModal] = useState(false)
+  const [callType, setCallType] = useState(null)
+  const [incomingCall, setIncomingCall] = useState(null)
   const messagesEndRef = useRef(null)
   const typingTimeoutRef = useRef(null)
 
@@ -17,8 +23,55 @@ const MessageArea = () => {
     scrollToBottom()
   }, [messages])
 
+  // Listen for incoming calls
+  useEffect(() => {
+    if (!socket) return
+
+    const handleIncomingCall = (data) => {
+      console.log('📞 Incoming call:', data)
+      setIncomingCall(data)
+      setCallType(data.callType)
+      setShowCallModal(true)
+    }
+
+    socket.on('incoming_call', handleIncomingCall)
+
+    return () => {
+      socket.off('incoming_call', handleIncomingCall)
+    }
+  }, [socket])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const startCall = (type) => {
+    if (!activeConversation) return
+    setCallType(type)
+    setShowCallModal(true)
+    setIncomingCall(null)
+  }
+
+  const closeCallModal = () => {
+    setShowCallModal(false)
+    setCallType(null)
+    setIncomingCall(null)
+  }
+
+  const getRecipientId = () => {
+    if (!activeConversation) return null
+    if (activeConversation.otherUser) {
+      return activeConversation.otherUser.userId
+    }
+    return activeConversation.participants.find(p => p !== user._id)
+  }
+
+  const getRecipientName = () => {
+    if (!activeConversation) return 'Unknown'
+    if (activeConversation.otherUser) {
+      return activeConversation.otherUser.username
+    }
+    return 'User'
   }
 
   const handleInputChange = (e) => {
@@ -259,7 +312,7 @@ const MessageArea = () => {
           
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => alert('Audio call feature coming soon!')}
+              onClick={() => startCall('audio')}
               className="p-2 hover:bg-purple-100 rounded-full transition-colors"
               title="Audio call"
             >
@@ -268,7 +321,7 @@ const MessageArea = () => {
               </svg>
             </button>
             <button
-              onClick={() => alert('Video call feature coming soon!')}
+              onClick={() => startCall('video')}
               className="p-2 hover:bg-purple-100 rounded-full transition-colors"
               title="Video call"
             >
@@ -442,6 +495,19 @@ const MessageArea = () => {
           animation-delay: 4s;
         }
       `}</style>
+
+      {/* Call Modal */}
+      {showCallModal && (
+        <CallModal
+          isOpen={showCallModal}
+          onClose={closeCallModal}
+          callType={callType}
+          recipientId={incomingCall ? incomingCall.callerId : getRecipientId()}
+          recipientName={incomingCall ? incomingCall.callerName : getRecipientName()}
+          isIncoming={!!incomingCall}
+          callData={incomingCall}
+        />
+      )}
     </div>
   )
 }

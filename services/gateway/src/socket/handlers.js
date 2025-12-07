@@ -129,6 +129,72 @@ const initializeHandlers = (io, socket) => {
     socket.leave(`group:${data.groupId}`);
   });
 
+  // ===== WebRTC Call Signaling =====
+  
+  // Handle initiating a call
+  socket.on('call_user', async (data) => {
+    console.log('📞 Call initiated:', userId, '->', data.recipientId);
+    
+    const recipientSocketId = await redisClient.get(`socket:${data.recipientId}`);
+    
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('incoming_call', {
+        callerId: userId,
+        callerName: socket.username,
+        callType: data.callType,
+        offer: data.offer
+      });
+    } else {
+      socket.emit('call_failed', { reason: 'User is offline' });
+    }
+  });
+
+  // Handle accepting a call
+  socket.on('accept_call', async (data) => {
+    console.log('✅ Call accepted by:', userId);
+    
+    const callerSocketId = await redisClient.get(`socket:${data.callerId}`);
+    
+    if (callerSocketId) {
+      io.to(callerSocketId).emit('call_accepted', {
+        answer: data.answer
+      });
+    }
+  });
+
+  // Handle rejecting a call
+  socket.on('reject_call', async (data) => {
+    console.log('❌ Call rejected by:', userId);
+    
+    const callerSocketId = await redisClient.get(`socket:${data.callerId}`);
+    
+    if (callerSocketId) {
+      io.to(callerSocketId).emit('call_rejected');
+    }
+  });
+
+  // Handle ending a call
+  socket.on('end_call', async (data) => {
+    console.log('📴 Call ended by:', userId);
+    
+    const recipientSocketId = await redisClient.get(`socket:${data.recipientId}`);
+    
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('call_ended');
+    }
+  });
+
+  // Handle ICE candidates
+  socket.on('ice_candidate', async (data) => {
+    const recipientSocketId = await redisClient.get(`socket:${data.recipientId}`);
+    
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('ice_candidate', {
+        candidate: data.candidate
+      });
+    }
+  });
+
   // Handle disconnect
   socket.on('disconnect', async () => {
     await redisClient.del(`socket:${userId}`);
