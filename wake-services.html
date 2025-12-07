@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wake Up Services - Chat App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .service {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+        
+        .service:hover {
+            background: #e9ecef;
+        }
+        
+        .service-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.waiting {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .status.checking {
+            background: #17a2b8;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status.online {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status.offline {
+            background: #dc3545;
+            color: white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .wake-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .wake-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .wake-btn:active {
+            transform: translateY(0);
+        }
+        
+        .wake-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Wake Up Services</h1>
+        <p class="subtitle">Click the button to wake up all backend services</p>
+        
+        <div id="services">
+            <div class="service">
+                <span class="service-name">Gateway Service</span>
+                <span class="status waiting" id="status-gateway">Waiting</span>
+            </div>
+            <div class="service">
+                <span class="service-name">Auth Service</span>
+                <span class="status waiting" id="status-auth">Waiting</span>
+            </div>
+            <div class="service">
+                <span class="service-name">User Service</span>
+                <span class="status waiting" id="status-user">Waiting</span>
+            </div>
+            <div class="service">
+                <span class="service-name">Chat Service</span>
+                <span class="status waiting" id="status-chat">Waiting</span>
+            </div>
+            <div class="service">
+                <span class="service-name">Notification Service</span>
+                <span class="status waiting" id="status-notification">Waiting</span>
+            </div>
+        </div>
+        
+        <div class="timer" id="timer"></div>
+        
+        <button class="wake-btn" id="wakeBtn" onclick="wakeAllServices()">
+            Wake Up All Services
+        </button>
+        
+        <div class="info">
+            <strong>💡 Why do I need this?</strong><br>
+            Render's free tier services sleep after 15 minutes of inactivity. 
+            The first request takes 30-60 seconds to wake them up. 
+            This tool pings all services to wake them up before you use the app.
+        </div>
+    </div>
+    
+    <script>
+        const services = [
+            { name: 'gateway', url: 'https://chat-gateway-lfj7.onrender.com/health' },
+            { name: 'auth', url: 'https://chat-auth.onrender.com/health' },
+            { name: 'user', url: 'https://chat-user.onrender.com/health' },
+            { name: 'chat', url: 'https://chat-chat.onrender.com/health' },
+            { name: 'notification', url: 'https://chat-notification.onrender.com/health' }
+        ];
+        
+        let countdown;
+        
+        async function checkService(service) {
+            const statusEl = document.getElementById(`status-${service.name}`);
+            statusEl.textContent = 'Checking...';
+            statusEl.className = 'status checking';
+            
+            try {
+                const response = await fetch(service.url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    statusEl.textContent = 'Online';
+                    statusEl.className = 'status online';
+                    return true;
+                } else {
+                    statusEl.textContent = 'Offline';
+                    statusEl.className = 'status offline';
+                    return false;
+                }
+            } catch (error) {
+                statusEl.textContent = 'Offline';
+                statusEl.className = 'status offline';
+                return false;
+            }
+        }
+        
+        async function wakeAllServices() {
+            const btn = document.getElementById('wakeBtn');
+            const timerEl = document.getElementById('timer');
+            
+            btn.disabled = true;
+            btn.textContent = 'Waking up services...';
+            
+            // Start countdown
+            let seconds = 60;
+            timerEl.textContent = seconds + 's';
+            
+            countdown = setInterval(() => {
+                seconds--;
+                timerEl.textContent = seconds + 's';
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    timerEl.textContent = '';
+                }
+            }, 1000);
+            
+            // Check all services in parallel
+            const results = await Promise.all(
+                services.map(service => checkService(service))
+            );
+            
+            // Check again after 30 seconds if any failed
+            setTimeout(async () => {
+                const failedServices = services.filter((service, index) => !results[index]);
+                if (failedServices.length > 0) {
+                    await Promise.all(
+                        failedServices.map(service => checkService(service))
+                    );
+                }
+                
+                clearInterval(countdown);
+                timerEl.textContent = '';
+                btn.disabled = false;
+                btn.textContent = 'Check Again';
+                
+                // Check if all are online
+                const allOnline = services.every(service => {
+                    const statusEl = document.getElementById(`status-${service.name}`);
+                    return statusEl.textContent === 'Online';
+                });
+                
+                if (allOnline) {
+                    btn.textContent = '✅ All Services Online!';
+                    btn.style.background = '#28a745';
+                    setTimeout(() => {
+                        window.location.href = 'https://chat-frontend-r61x.onrender.com';
+                    }, 2000);
+                }
+            }, 30000);
+        }
+        
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                services.forEach(service => checkService(service));
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
