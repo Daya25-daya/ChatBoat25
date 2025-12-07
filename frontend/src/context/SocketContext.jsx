@@ -20,7 +20,11 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (accessToken && user) {
       // Connect to socket server
-      const newSocket = io('http://localhost:4000', {
+      const socketUrl = import.meta.env.PROD 
+        ? 'https://chat-gateway-lfj7.onrender.com' 
+        : 'http://localhost:4000'
+      
+      const newSocket = io(socketUrl, {
         auth: {
           token: accessToken
         }

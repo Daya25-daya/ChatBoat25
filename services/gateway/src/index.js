@@ -19,9 +19,15 @@ const app = express();
 const server = http.createServer(app);
 
 // Socket.IO setup with CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://chat-frontend-r61x.onrender.com',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -30,7 +36,7 @@ const io = new Server(server, {
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
