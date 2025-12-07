@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7
+    container_name: chat-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - chat-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: chat-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chat-network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: chat-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - chat-network
+
+  # Auth Service
+  auth-service:
+    build: ./services/auth
+    container_name: chat-auth-service
+    ports:
+      - "4001:4001"
+    environment:
+      PORT: 4001
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/chat-auth?authSource=admin
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password123@rabbitmq:5672
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - chat-network
+
+  # User Service
+  user-service:
+    build: ./services/user
+    container_name: chat-user-service
+    ports:
+      - "4002:4002"
+    environment:
+      PORT: 4002
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/chat-users?authSource=admin
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password123@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - chat-network
+
+  # Chat Service
+  chat-service:
+    build: ./services/chat
+    container_name: chat-chat-service
+    ports:
+      - "4003:4003"
+    environment:
+      PORT: 4003
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/chat-messages?authSource=admin
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password123@rabbitmq:5672
+    depends_on:
+      - mongodb
+      - redis
+      - rabbitmq
+    networks:
+      - chat-network
+
+  # Notification Service
+  notification-service:
+    build: ./services/notification
+    container_name: chat-notification-service
+    ports:
+      - "4004:4004"
+    environment:
+      PORT: 4004
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password123@rabbitmq:5672
+    depends_on:
+      - redis
+      - rabbitmq
+    networks:
+      - chat-network
+
+  # Gateway Service
+  gateway-service:
+    build: ./services/gateway
+    container_name: chat-gateway-service
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      AUTH_SERVICE_URL: http://auth-service:4001
+      USER_SERVICE_URL: http://user-service:4002
+      CHAT_SERVICE_URL: http://chat-service:4003
+      NOTIFICATION_SERVICE_URL: http://notification-service:4004
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+      - notification-service
+    networks:
+      - chat-network
+
+  # NGINX Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: chat-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - gateway-service
+    networks:
+      - chat-network
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    container_name: chat-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - nginx
+    networks:
+      - chat-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+  uploads_data:
+
+networks:
+  chat-network:
+    driver: bridge

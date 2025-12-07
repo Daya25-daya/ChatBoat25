@@ -1,0 +1,21 @@
+{
+  "name": "realtime-chat-app",
+  "version": "1.0.0",
+  "description": "Production-ready real-time chat application with microservices",
+  "scripts": {
+    "setup": "npm run install-all",
+    "install-all": "cd services/gateway && npm install && cd ../auth && npm install && cd ../chat && npm install && cd ../user && npm install && cd ../notification && npm install && cd ../../frontend && npm install",
+    "dev:gateway": "cd services/gateway && npm run dev",
+    "dev:auth": "cd services/auth && npm run dev",
+    "dev:chat": "cd services/chat && npm run dev",
+    "dev:user": "cd services/user && npm run dev",
+    "dev:notification": "cd services/notification && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": ["chat", "realtime", "microservices", "websocket"],
+  "author": "",
+  "license": "MIT"
+}

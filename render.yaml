@@ -1,0 +1,123 @@
+services:
+  # Gateway Service
+  - type: web
+    name: chat-gateway
+    runtime: docker
+    dockerfilePath: ./services/gateway/Dockerfile
+    dockerContext: ./services/gateway
+    plan: free
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: AUTH_SERVICE_URL
+        value: https://chat-auth.onrender.com
+      - key: USER_SERVICE_URL
+        value: https://chat-user.onrender.com
+      - key: CHAT_SERVICE_URL
+        value: https://chat-chat.onrender.com
+      - key: NOTIFICATION_SERVICE_URL
+        value: https://chat-notification.onrender.com
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chat-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://chat-frontend.onrender.com
+
+  # Auth Service
+  - type: web
+    name: chat-auth
+    runtime: docker
+    dockerfilePath: ./services/auth/Dockerfile
+    dockerContext: ./services/auth
+    plan: free
+    envVars:
+      - key: PORT
+        value: 4001
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chat-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+  # User Service
+  - type: web
+    name: chat-user
+    runtime: docker
+    dockerfilePath: ./services/user/Dockerfile
+    dockerContext: ./services/user
+    plan: free
+    envVars:
+      - key: PORT
+        value: 4002
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chat-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+
+  # Chat Service
+  - type: web
+    name: chat-chat
+    runtime: docker
+    dockerfilePath: ./services/chat/Dockerfile
+    dockerContext: ./services/chat
+    plan: free
+    envVars:
+      - key: PORT
+        value: 4003
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chat-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+
+  # Notification Service
+  - type: web
+    name: chat-notification
+    runtime: docker
+    dockerfilePath: ./services/notification/Dockerfile
+    dockerContext: ./services/notification
+    plan: free
+    envVars:
+      - key: PORT
+        value: 4004
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chat-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+
+  # Frontend
+  - type: web
+    name: chat-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+
+databases:
+  - name: chat-redis
+    plan: free
+    ipAllowList: []
