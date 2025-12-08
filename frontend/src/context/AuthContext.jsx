@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
+import { generateKeyPair, storeKeys, hasKeys, clearKeys } from '../utils/encryption'
 
 const AuthContext = createContext()
 
@@ -40,6 +41,21 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(accessToken)
       setUser(user)
 
+      // Check if user has encryption keys, generate if missing
+      if (!hasKeys(user._id)) {
+        console.log('🔐 Generating encryption keys for existing user...')
+        const { publicKey, privateKey } = await generateKeyPair()
+        storeKeys(user._id, publicKey, privateKey)
+        
+        // Update public key on server
+        try {
+          await axios.put('/api/users/profile', { publicKey })
+          console.log('✅ Encryption keys generated and synced')
+        } catch (error) {
+          console.error('Failed to sync public key:', error)
+        }
+      }
+
       return { success: true }
     } catch (error) {
       return {
@@ -51,16 +67,26 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
+      // Step 1: Generate encryption keys for E2EE
+      console.log('🔐 Generating encryption keys...')
+      const { publicKey, privateKey } = await generateKeyPair()
+
+      // Step 2: Register user with public key
       const response = await axios.post('/api/auth/register', {
         username,
         email,
-        password
+        password,
+        publicKey // Send public key to server
       })
       const { user, accessToken, refreshToken } = response.data
 
       localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('refreshToken', refreshToken)
       localStorage.setItem('user', JSON.stringify(user))
+
+      // Step 3: Store encryption keys locally (private key never leaves device!)
+      storeKeys(user._id, publicKey, privateKey)
+      console.log('✅ Encryption keys generated and stored')
 
       setAccessToken(accessToken)
       setUser(user)
@@ -81,6 +107,11 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // Clear encryption keys on logout
+      if (user) {
+        clearKeys(user._id)
+      }
+      
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('user')
