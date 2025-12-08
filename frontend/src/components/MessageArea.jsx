@@ -5,6 +5,7 @@ import { useSocket } from '../context/SocketContext'
 import EmojiPicker from './EmojiPicker'
 import FileUpload from './FileUpload'
 import CallModal from './CallModal'
+import SmartReply from './SmartReply'
 
 const MessageArea = () => {
   const { activeConversation, messages, sendMessage, startTyping, stopTyping, typingUsers } = useChat()
@@ -416,6 +417,17 @@ const MessageArea = () => {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Smart Reply Suggestions */}
+      {activeConversation && messages.length > 0 && (
+        <SmartReply
+          messages={messages}
+          currentUserId={user._id}
+          onSelectReply={(reply) => {
+            setInputMessage(reply)
+          }}
+        />
+      )}
 
       {/* Input */}
       <div className="relative z-10 border-t border-purple-100 p-4 bg-white/80 backdrop-blur-md">
