@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const chatRoutes = require('./routes/chat');
+const adminRoutes = require('./routes/admin');
 const { connectRabbitMQ } = require('./config/rabbitmq');
 const redisClient = require('./config/redis');
 
@@ -16,6 +17,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/', chatRoutes);
+app.use('/admin', adminRoutes);
 
 const PORT = process.env.PORT || 4003;
 
