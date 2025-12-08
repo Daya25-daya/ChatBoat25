@@ -10,7 +10,8 @@ const updateProfileSchema = Joi.object({
   displayName: Joi.string().max(50).optional(),
   avatar: Joi.string().uri().optional(),
   bio: Joi.string().max(500).optional(),
-  status: Joi.string().valid('online', 'offline', 'away', 'busy').optional()
+  status: Joi.string().valid('online', 'offline', 'away', 'busy').optional(),
+  publicKey: Joi.string().optional()
 });
 
 // Get user profile
