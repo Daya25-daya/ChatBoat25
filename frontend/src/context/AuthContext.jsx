@@ -41,18 +41,25 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(accessToken)
       setUser(user)
 
-      // Check if user has encryption keys, generate if missing
+      // Optional: Generate encryption keys if not exists (E2EE feature)
+      // This is optional and won't break the app if backend doesn't support it
       if (!hasKeys(user._id)) {
-        console.log('🔐 Generating encryption keys for existing user...')
-        const { publicKey, privateKey } = await generateKeyPair()
-        storeKeys(user._id, publicKey, privateKey)
-        
-        // Update public key on server
         try {
-          await axios.put('/api/users/profile', { publicKey })
-          console.log('✅ Encryption keys generated and synced')
-        } catch (error) {
-          console.error('Failed to sync public key:', error)
+          console.log('🔐 Generating encryption keys (optional)...')
+          const { publicKey, privateKey } = await generateKeyPair()
+          storeKeys(user._id, publicKey, privateKey)
+          
+          // Try to sync public key with server (optional)
+          try {
+            await axios.put('/api/users/profile', { publicKey })
+            console.log('✅ Encryption keys synced')
+          } catch (syncError) {
+            // Silently fail - encryption will work locally without server sync
+            console.log('ℹ️ Encryption keys stored locally (server sync not available)')
+          }
+        } catch (keyError) {
+          // Encryption key generation failed - not critical, app still works
+          console.log('ℹ️ Encryption not available')
         }
       }
 
@@ -67,16 +74,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
-      // Step 1: Generate encryption keys for E2EE
-      console.log('🔐 Generating encryption keys...')
-      const { publicKey, privateKey } = await generateKeyPair()
-
-      // Step 2: Register user with public key
+      // Step 1: Try to register user (without encryption first)
       const response = await axios.post('/api/auth/register', {
         username,
         email,
-        password,
-        publicKey // Send public key to server
+        password
       })
       const { user, accessToken, refreshToken } = response.data
 
@@ -84,12 +86,27 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refreshToken', refreshToken)
       localStorage.setItem('user', JSON.stringify(user))
 
-      // Step 3: Store encryption keys locally (private key never leaves device!)
-      storeKeys(user._id, publicKey, privateKey)
-      console.log('✅ Encryption keys generated and stored')
-
       setAccessToken(accessToken)
       setUser(user)
+
+      // Step 2: Optional - Generate encryption keys for E2EE
+      try {
+        console.log('🔐 Generating encryption keys (optional)...')
+        const { publicKey, privateKey } = await generateKeyPair()
+        
+        // Store keys locally
+        storeKeys(user._id, publicKey, privateKey)
+        
+        // Try to sync with server (optional)
+        try {
+          await axios.put('/api/users/profile', { publicKey })
+          console.log('✅ Encryption keys synced')
+        } catch (syncError) {
+          console.log('ℹ️ Encryption keys stored locally (server sync not available)')
+        }
+      } catch (keyError) {
+        console.log('ℹ️ Encryption not available')
+      }
 
       return { success: true }
     } catch (error) {
