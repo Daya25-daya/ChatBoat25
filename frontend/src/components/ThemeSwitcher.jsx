@@ -24,18 +24,30 @@ const ThemeSwitcher = () => {
   }
 
   const handleThemeChange = (theme) => {
+    console.log('Changing theme to:', theme)
     changeTheme(theme)
     setIsOpen(false)
+  }
+
+  const handleToggle = () => {
+    console.log('Toggle clicked, current theme:', currentTheme)
+    setIsOpen(!isOpen)
+  }
+
+  // Fallback if theme context not available
+  if (!changeTheme) {
+    console.error('Theme context not available!')
+    return null
   }
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
         title="Change theme"
       >
-        {themeIcons[currentTheme]}
+        {themeIcons[currentTheme] || themeIcons.light}
       </button>
 
       {/* Dropdown */}
@@ -50,7 +62,7 @@ const ThemeSwitcher = () => {
           {/* Dropdown menu */}
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
             <div className="p-2">
-              {themes.map((theme) => (
+              {themes && themes.map((theme) => (
                 <button
                   key={theme}
                   onClick={() => handleThemeChange(theme)}

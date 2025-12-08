@@ -5,7 +5,7 @@ import { useSocket } from '../context/SocketContext'
 import ConversationList from '../components/ConversationList'
 import MessageArea from '../components/MessageArea'
 import UserSearch from '../components/UserSearch'
-import ThemeSwitcher from '../components/ThemeSwitcher'
+import SimpleThemeSwitcher from '../components/SimpleThemeSwitcher'
 
 const Chat = () => {
   const { user, logout } = useAuth()
@@ -50,7 +50,7 @@ const Chat = () => {
             </div>
             
             {/* Theme Switcher */}
-            <ThemeSwitcher />
+            <SimpleThemeSwitcher />
             
             <button
               onClick={() => setShowSearch(!showSearch)}
