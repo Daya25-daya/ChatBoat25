@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
 
 const ThemeSwitcher = () => {
   const { currentTheme, themes, changeTheme } = useTheme()
+  const [isOpen, setIsOpen] = useState(false)
 
   const themeIcons = {
     light: (
@@ -21,41 +23,58 @@ const ThemeSwitcher = () => {
     )
   }
 
+  const handleThemeChange = (theme) => {
+    changeTheme(theme)
+    setIsOpen(false)
+  }
+
   return (
-    <div className="relative group">
+    <div className="relative">
       <button
-        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 rounded-full hover:bg-white/20 transition-colors text-white"
         title="Change theme"
       >
         {themeIcons[currentTheme]}
       </button>
 
       {/* Dropdown */}
-      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-        <div className="p-2">
-          {themes.map((theme) => (
-            <button
-              key={theme}
-              onClick={() => changeTheme(theme)}
-              className={`
-                w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors
-                ${currentTheme === theme
-                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }
-              `}
-            >
-              {themeIcons[theme]}
-              <span className="capitalize">{theme}</span>
-              {currentTheme === theme && (
-                <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      {isOpen && (
+        <>
+          {/* Backdrop to close dropdown */}
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Dropdown menu */}
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+            <div className="p-2">
+              {themes.map((theme) => (
+                <button
+                  key={theme}
+                  onClick={() => handleThemeChange(theme)}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors
+                    ${currentTheme === theme
+                      ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }
+                  `}
+                >
+                  {themeIcons[theme]}
+                  <span className="capitalize">{theme}</span>
+                  {currentTheme === theme && (
+                    <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
