@@ -13,9 +13,9 @@ const Chat = () => {
   const [showSearch, setShowSearch] = useState(false)
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white p-4 shadow-2xl">
+      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 dark:from-purple-700 dark:via-pink-700 dark:to-indigo-700 text-white p-4 shadow-2xl">
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <div className="flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -78,12 +78,12 @@ const Chat = () => {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden max-w-screen-2xl mx-auto w-full">
         {/* Sidebar - Conversations */}
-        <div className="w-80 bg-white/80 backdrop-blur-sm border-r border-gray-200 flex flex-col shadow-xl">
+        <div className="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shadow-xl">
           <ConversationList />
         </div>
 
         {/* Message Area */}
-        <div className="flex-1 flex flex-col bg-white/50 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
           <MessageArea />
         </div>
       </div>

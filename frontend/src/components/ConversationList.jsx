@@ -22,8 +22,8 @@ const ConversationList = () => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-purple-50/50 to-white">
-      <div className="p-5 border-b border-purple-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-purple-50/50 to-white dark:from-gray-800 dark:to-gray-900">
+      <div className="p-5 border-b border-purple-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-10">
         <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
           Messages
         </h2>

@@ -248,14 +248,14 @@ const MessageArea = () => {
 
   if (!activeConversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-900">
         <div className="text-center p-8">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-500 rounded-3xl shadow-2xl mb-6 animate-bounce">
             <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Start Chatting
           </h2>
           <p className="text-gray-600 text-lg mb-6">
@@ -303,7 +303,7 @@ const MessageArea = () => {
               {getOtherUserName().charAt(0).toUpperCase()}
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800">{getOtherUserName()}</h3>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100">{getOtherUserName()}</h3>
               <p className="text-xs text-green-500 flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
                 Online
@@ -430,7 +430,7 @@ const MessageArea = () => {
       )}
 
       {/* Input */}
-      <div className="relative z-10 border-t border-purple-100 p-4 bg-white/80 backdrop-blur-md">
+      <div className="relative z-10 border-t border-purple-100 dark:border-gray-700 p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md">
         <form onSubmit={handleSendMessage} className="flex space-x-3">
           <div className="flex space-x-2">
             <button
@@ -451,7 +451,7 @@ const MessageArea = () => {
               value={inputMessage}
               onChange={handleInputChange}
               placeholder="Type a message..."
-              className="w-full px-5 py-3 pr-12 bg-white border-2 border-purple-200 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 shadow-sm"
+              className="w-full px-5 py-3 pr-12 bg-white dark:bg-gray-700 dark:text-white border-2 border-purple-200 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300 shadow-sm"
             />
             <button
               type="button"
