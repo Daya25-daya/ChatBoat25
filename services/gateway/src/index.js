@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const chatRoutes = require('./routes/chat');
 const uploadRoutes = require('./routes/upload');
+const adminRoutes = require('./routes/admin');
 const { authenticateSocket } = require('./middleware/socketAuth');
 const socketHandlers = require('./socket/handlers');
 const redisClient = require('./config/redis');
@@ -60,6 +61,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api', uploadRoutes);
 
 // Serve uploaded files directly at /uploads

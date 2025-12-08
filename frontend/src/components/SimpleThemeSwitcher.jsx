@@ -14,24 +14,18 @@ const SimpleThemeSwitcher = () => {
   const applyTheme = (newTheme) => {
     const root = document.documentElement
     
+    // Remove all theme classes first
+    root.classList.remove('dark', 'light', 'ocean')
+    
     if (newTheme === 'dark') {
-      root.style.setProperty('--bg-primary', '#1f2937')
-      root.style.setProperty('--bg-secondary', '#111827')
-      root.style.setProperty('--text-primary', '#f9fafb')
-      root.style.setProperty('--text-secondary', '#9ca3af')
       root.classList.add('dark')
+      root.style.backgroundColor = '#111827'
     } else if (newTheme === 'ocean') {
-      root.style.setProperty('--bg-primary', '#075985')
-      root.style.setProperty('--bg-secondary', '#0c4a6e')
-      root.style.setProperty('--text-primary', '#f0f9ff')
-      root.style.setProperty('--text-secondary', '#bae6fd')
-      root.classList.add('dark')
+      root.classList.add('dark', 'ocean')
+      root.style.backgroundColor = '#0c4a6e'
     } else {
-      root.style.setProperty('--bg-primary', '#ffffff')
-      root.style.setProperty('--bg-secondary', '#f9fafb')
-      root.style.setProperty('--text-primary', '#111827')
-      root.style.setProperty('--text-secondary', '#6b7280')
-      root.classList.remove('dark')
+      root.classList.add('light')
+      root.style.backgroundColor = '#ffffff'
     }
   }
 
@@ -41,11 +35,6 @@ const SimpleThemeSwitcher = () => {
     applyTheme(newTheme)
     localStorage.setItem('app-theme', newTheme)
     setIsOpen(false)
-    
-    // Force page reload to apply theme everywhere
-    setTimeout(() => {
-      window.location.reload()
-    }, 100)
   }
 
   const themeIcons = {

@@ -47,15 +47,27 @@ const AdminDashboard = () => {
       const [statsRes, usersRes, messagesRes] = await Promise.all([
         axios.get('/api/admin/stats'),
         axios.get('/api/admin/users'),
-        axios.get('/api/admin/recent-messages')
+        axios.get('/api/admin/recent-messages?limit=20')
       ])
 
       setStats(statsRes.data)
       setUsers(usersRes.data)
-      setRecentMessages(messagesRes.data)
-      setActiveUsers(statsRes.data.activeUserIds || [])
+      
+      // Add sender names to messages
+      const messagesWithNames = messagesRes.data.map(msg => ({
+        ...msg,
+        senderName: usersRes.data.find(u => u._id === msg.senderId)?.username || 'Unknown'
+      }))
+      setRecentMessages(messagesWithNames)
+      
+      // Get active user IDs (online in last 5 min)
+      const activeUserIds = usersRes.data
+        .filter(u => u.lastActive && new Date(u.lastActive) > new Date(Date.now() - 5 * 60 * 1000))
+        .map(u => u._id)
+      setActiveUsers(activeUserIds)
     } catch (error) {
       console.error('Error loading dashboard:', error)
+      alert('Failed to load dashboard. Make sure you have admin role.')
     } finally {
       setLoading(false)
     }
