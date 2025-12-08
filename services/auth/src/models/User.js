@@ -22,6 +22,24 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+  // Admin & Role Management
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  banned: {
+    type: Boolean,
+    default: false
+  },
+  bannedAt: Date,
+  bannedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // E2E Encryption
+  publicKey: String,
+  // Session Management
   refreshTokens: [{
     token: String,
     createdAt: {
@@ -29,7 +47,11 @@ const userSchema = new mongoose.Schema({
       default: Date.now,
       expires: 604800 // 7 days
     }
-  }]
+  }],
+  lastActive: {
+    type: Date,
+    default: Date.now
+  }
 }, {
   timestamps: true
 });
